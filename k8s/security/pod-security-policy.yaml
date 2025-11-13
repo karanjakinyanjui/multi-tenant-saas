@@ -1,0 +1,35 @@
+# Pod Security Admission enforcement
+# This is enforced at the namespace level via labels
+# See: https://kubernetes.io/docs/concepts/security/pod-security-admission/
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pod-security-config
+  namespace: youth-saas-system
+data:
+  policy: |
+    # Restricted profile (most secure)
+    # Applied to all tenant namespaces by default
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+
+    # Requirements:
+    # - Run as non-root user
+    # - Drop all capabilities
+    # - No privilege escalation
+    # - Seccomp profile required
+    # - Read-only root filesystem (where possible)
+---
+# Example of namespace with PSA labels
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: example-tenant-namespace
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+    tenant-id: example-tenant
+    app.kubernetes.io/managed-by: youth-saas-platform
